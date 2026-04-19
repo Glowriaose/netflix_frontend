@@ -1,7 +1,11 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:8080"
+  // base url for local deployment on my pc
+  // baseURL: "http://localhost:8080",
+
+  // backend EC2 deployment (from .env)
+  baseURL: process.env.REACT_APP_API_URL
 });
 
 export default api;
