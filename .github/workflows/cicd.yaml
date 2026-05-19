@@ -1,4 +1,4 @@
-name: Build and push Frontend-docker-image
+name: Build and push Frontend docker image
 
 on:
   push:
@@ -20,7 +20,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION_US }}
 
       - name: Login to ECR
-        id: login-ecr  # This ID allows the next steps to grab your Account ID automatically
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Docker build
@@ -29,7 +29,6 @@ jobs:
 
       - name: Docker tag
         env:
-          # This variable now contains your full ECR URL (AccountID.dkr.ecr.region...)
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
           docker tag frontend-ecr:latest $ECR_REGISTRY/frontend-ecr:${{ github.run_number }}
