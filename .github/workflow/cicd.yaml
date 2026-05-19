@@ -1,0 +1,43 @@
+name: Build and push Frontend docker image
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION_US }}
+
+      - name: Login to ECR
+        id: login-ecr  # This ID allows the next steps to grab your Account ID automatically
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Docker build
+        run: |
+          docker build -t frontend-ecr:latest .
+
+      - name: Docker tag
+        env:
+          # This variable now contains your full ECR URL (AccountID.dkr.ecr.region...)
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker tag frontend-ecr:latest $ECR_REGISTRY/frontend-ecr:${{ github.run_number }}
+          docker tag frontend-ecr:latest $ECR_REGISTRY/frontend-ecr:latest
+
+      - name: Docker push
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker push $ECR_REGISTRY/frontend-ecr:${{ github.run_number }}
+          docker push $ECR_REGISTRY/frontend-ecr:latest
